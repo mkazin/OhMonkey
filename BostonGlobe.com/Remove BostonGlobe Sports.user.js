@@ -1,15 +1,22 @@
 // ==UserScript==
-// @namespace   https://openuserjs.org/users/mkazin
 // @name        Remove BostonGlobe sports
+// @namespace   https://openuserjs.org/users/mkazin
 // @description Hides sports from the Boston Globe
-// @version     1.0.0
+// @version     1.1.0
 // @author      Michael Kazin
 // @license     BSD-3-Clause
-// @include     http://*.bostonglobe.com/*
-// @include     https://www.bostonglobe.com/*
+// @match       http://*.bostonglobe.com/*
+// @match       https://www.bostonglobe.com/*
 // ==/UserScript==
 
+const SPORTS_TERMS = ['Football', 'NFL', 'Damar Hamlin',
+                      'Basketball', 'NBA', 'Celtics',
+                      'Baseball', 'MLB', 'Major League', 'Sox',
+                      'Soccer', 'FIFA',
+                      'Hockey', 'Bruins' ] // 'Patriots' may be problematic
+
 function removeElement(element, navigator) {
+    if (! element) return
     navigator = navigator || undefined;
     var targetElement = element;
     if (navigator) {
@@ -60,6 +67,11 @@ window.cleanSportsPosts = function() {
     // <section id="hp-lower-fw" class="hp | lower-fw col grid width_full"> containing
     //   <div class="sponsored_content_ads | margin_vertical_16 margin_bottom_32--mobile width_full"/>
     removeBySelector("#hp-lower-fw");
+
+    SPORTS_TERMS.forEach( (term) => {
+        removeMatchingElementsContainingText(".display_block", term, grandparentNavigator)
+        removeMatchingElementsContainingText("h2.headline span", term, grandparentNavigator)
+    })
 };
 
 // Observe changes in the page and reapply.
@@ -75,4 +87,5 @@ var mutationObserver = new MutationObserver(function(mutations) {
 
 mutationObserver.observe(target, config);
 cleanSportsPosts();
+
 

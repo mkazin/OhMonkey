@@ -1,10 +1,10 @@
 // ==UserScript==
 // @name         AWS Account Info Hider
 // @description  Hides sensitive information on AWS Console
-// @version      0.1
+// @version      0.2
 // @author       https://github.com/mkazin
 // @copyright    2020, mkazin (https://openuserjs.org/users/mkazin)
-// @license      MIT
+// @license      BSD-3-Clause
 // @match        https://*.console.aws.amazon.com/*
 // @grant        none
 // @run-at       document-start
