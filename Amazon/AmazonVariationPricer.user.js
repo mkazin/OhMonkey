@@ -1,9 +1,9 @@
 // ==UserScript==
 // @name         Amazon Variation Pricer
-// @namespace    http://tampermonkey.net/
-// @version      0.1
-// @description  try to take over the world!
-// @author       You
+// @description  Shows prices for each color/size of an item on Amazon
+// @author       https://github.com/mkazin
+// @version      0.2
+// @license      BSD-3-Clause
 // @match        https://www.amazon.com/*
 // @match        https://www.amazon.ca/*
 // @match        https://www.amazon.in/*
@@ -11,6 +11,7 @@
 // @match        https://www.amazon.de/*
 // @match        https://www.amazon.fr/*
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=amazon.com
+// @namespace    http://tampermonkey.net/
 // @grant        none
 // ==/UserScript==
 
