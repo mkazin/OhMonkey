@@ -19,3 +19,7 @@ Notes:
 ### [Prime Gaming - Shade Redeemed](PrimeGaming-ShadeRedeemed.user.js)
 
 Makes it easier to see which items have not yet been redeemed.
+
+### [Amazon Subscription Total](AmazonSubscriptionTotal.user.js)
+
+Shows an estimated cost of your upcoming Subscribe & Save items based on the current prices displayed.
