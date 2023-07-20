@@ -14,12 +14,14 @@ Notes:
 * TODO: full international support. Open an issue to ping me or create a pull request with the missing @match annotation.
 * TBD: should I sort by price? Let me know if that sounds useful. It makes international support a bit trickier.
 
+### [Amazon Subscription Total](AmazonSubscriptionTotal.user.js)
+
+Shows an estimated cost of your upcoming Subscribe & Save items based on the current prices displayed.
+
+
 ## Prime Gaming
 
 ### [Prime Gaming - Shade Redeemed](PrimeGaming-ShadeRedeemed.user.js)
 
 Makes it easier to see which items have not yet been redeemed.
 
-### [Amazon Subscription Total](AmazonSubscriptionTotal.user.js)
-
-Shows an estimated cost of your upcoming Subscribe & Save items based on the current prices displayed.
