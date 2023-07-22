@@ -3,7 +3,8 @@
 ## Scripts:
 
 ### [BuiltIn My City](BuiltInMyCity.user.js)
-Removes jobs listed in more than 5 cities.
+Removes jobs listed in more than 5 cities. Activated only when Office or Hybrid are selected.
+
 
 The pandemic broke all job search engines for those seeking a job with a physical location.
 

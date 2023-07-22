@@ -6,8 +6,9 @@
 // @license      BSD-3-Clause
 // @namespace    http://tampermonkey.net/
 // @grant        none
-// @match        https://www.amazon.com/gp/subscribe-and-save/manager/viewsubscriptions
+// @match        https://www.amazon.com/gp/subscribe-and-save/manager/viewsubscriptions*
 // @match        https://www.amazon.com/gp/subscribe-and-save/manage?*
+// @match        https://www.amazon.com/auto-deliveries/*
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=amazon.com
 // ==/UserScript==
 
