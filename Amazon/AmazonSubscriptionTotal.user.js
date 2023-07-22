@@ -2,11 +2,12 @@
 // @name         Amazon Subscribe & Save Total
 // @description  Shows total estimated cost of upcoming for Amazon subscription items
 // @author       https://github.com/mkazin
-// @version      0.1
+// @version      0.2
 // @license      BSD-3-Clause
 // @namespace    http://tampermonkey.net/
 // @grant        none
 // @match        https://www.amazon.com/gp/subscribe-and-save/manager/viewsubscriptions
+// @match        https://www.amazon.com/gp/subscribe-and-save/manage?*
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=amazon.com
 // ==/UserScript==
 
