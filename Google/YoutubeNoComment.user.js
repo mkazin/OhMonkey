@@ -20,6 +20,9 @@ const SELECTORS = [
     "#comments #action-buttons",
     // Entire comments section
     "#comments",
+    // Buttons on shorts videos (youtube.com/shorts/)
+    "div#like-button",
+    "div#comments-button",
 ]
 
 GM_addStyle(`${SELECTORS.join(",")} { display:none; }`)
