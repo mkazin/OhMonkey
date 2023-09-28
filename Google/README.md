@@ -1,5 +1,13 @@
 # Google Scripts
 
+## Bard - bard.google.com
+Google's Large Language Model AI chatbot
+
+### [Bard Move Listen Button](BardMoveListenButton.user.js)
+Some genius designer put the button at the top of the response's text box.
+But Bard is verbose, so we often get scrolled away from it.
+Why should we need to scroll up to the top of the text just so it can read to us?
+
 ## Gmail - mail.google.com
 
 ### [Gmail Ad Remover](GmailAdRemover.user.js)
