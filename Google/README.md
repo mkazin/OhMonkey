@@ -20,6 +20,16 @@ And for fun it also counts and console logs the number of ads removed per tab an
 
 ## YouTube - youtube.com
 
+### [Auto Speed](YoutubeAutoSpeed.user.js)
+Automatically adjusts the speed of videos based on a words-per-minute analysis of the transcript.
+
+This is an early version and has many issues which could be addressed:
+* Speeds are hard-coded to pretty random values at the moment and require adjustment.
+* English and US centric.
+* Does not detect videos which should always play at normal speed (e.g. music)
+
+Please create issues or submit pull requests for changes you want.
+
 ### [Hide Next Videos](YoutubeHideNextVideos.user.js)
 Removes suggestions for other videos to watch.
 
