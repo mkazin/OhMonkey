@@ -22,6 +22,14 @@ const WPM_TABLE = [
 
 ]
 
+const MUSIC_TERMS = [
+    "music video",
+    "official video",
+    "official music",
+    "official hd video",
+    "unplugged",
+    "music awards",
+]
 function wpmToSpeed(wpm) {
     for (let step of WPM_TABLE) {
         if (wpm >= step.wpm_max) {
@@ -29,6 +37,14 @@ function wpmToSpeed(wpm) {
         }
     }
     return 1.0
+}
+
+function isMusic() {
+    const title = document.title.toLocaleLowerCase()
+    const description = document.querySelector("div#description ytd-text-inline-expander#description-inline-expander")?.innerText.toLocaleLowerCase()
+    return MUSIC_TERMS.some(
+        (term) => title.includes(term) || description.includes(term)
+    )
 }
 
 // Thanks for showing me how to do this, https://mkg20001.io/yt-music-playback-speed/
@@ -49,8 +65,13 @@ function run() {
     'use strict';
     // console.log(`${GM_info.script.name} started`)
 
-    const URL_PREFIX = "https://www.youtube.com/watch?v="
 
+    if (isMusic()) {
+        console.info(`${GM_info.script.name}: detected music. Aborting.`)
+        return
+    }
+
+    const URL_PREFIX = "https://www.youtube.com/watch?v="
     fetch(`https://www.youtube.com/youtubei/v1/get_transcript?key=${ytcfg.data_.INNERTUBE_API_KEY}&prettyPrint=false`, {
         "headers": {
             "accept": "*/*",
@@ -80,7 +101,8 @@ function run() {
         const transcriptSegments = data.actions[0].updateEngagementPanelAction.content.transcriptRenderer.content.transcriptSearchPanelRenderer.body.transcriptSegmentListRenderer.initialSegments
         if (data.actions.length != 1) {
             // What's going on with the actions array? Should I be iterating over it too?
-            debugger
+            console.warn(`${GM_info.script.name}: data.actions is longer than 1 => ${data.actions.length}`)
+            // debugger
         }
         const transcriptTotals = Array.from(transcriptSegments).reduce( (acc, segment ) => {
             acc.words += countWords(segment.transcriptSegmentRenderer.snippet.runs[0].text)
