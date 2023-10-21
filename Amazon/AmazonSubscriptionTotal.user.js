@@ -15,7 +15,7 @@
 (function() {
     'use strict';
 
-    const container = document.querySelector(".delivery-savings-message-container");
+    const container = document.querySelector(".delivery-information-container");
     //a-size-base-plus a-color-price subscription-price a-text-bold
     const total = Array.from(document.querySelectorAll(".subscription-price")).map(el => Number(el.innerText.replace("$",""))).reduce( (acc, val) => acc + val)
 
