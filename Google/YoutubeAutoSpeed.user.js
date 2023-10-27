@@ -107,7 +107,6 @@ function run() {
     .then(data => {
 
         const countWords = text => text.split(" ").length
-        const getSegmentText = segment => segment.transcriptSegmentRenderer.snippet?.runs[0].text || segment.transcriptSegmentRenderer.snippet.simpleText
         const transcriptSegments = data.actions[0].updateEngagementPanelAction.content.transcriptRenderer.content.transcriptSearchPanelRenderer.body.transcriptSegmentListRenderer.initialSegments
         // console.log(transcriptSegments)
         if (data.actions.length != 1) {
