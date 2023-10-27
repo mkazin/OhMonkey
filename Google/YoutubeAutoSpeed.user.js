@@ -8,8 +8,7 @@
 // @match        https://www.youtube.com/watch?v=*
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=youtube.com
 // @run-at       document-idle
-// @grant        GM_setValue
-// @grant        GM_getValue
+// @grant        none
 // ==/UserScript==
 
 const WPM_TABLE = [
@@ -117,32 +116,13 @@ function run() {
             // debugger
         }
 
-        // let wpmbuckets = {}
-        // console.log(`${GM_info.script.name}: transcriptSegments length = ${transcriptSegments.length}`)
         const transcriptTotals = Array.from(transcriptSegments).reduce( (acc, segment ) => {
             // YT Transcript contains multiple ways of encoding text:
             const renderer = segment.transcriptSegmentRenderer || segment.transcriptSectionHeaderRenderer
             const text = renderer.snippet?.simpleText || renderer.snippet?.runs[0].text
             let wordCount = countWords(text)
-            // console.log(`wordcount: ${wordCount}`)
             acc.words += wordCount
             acc.ms += renderer.endMs - renderer.startMs;
-            // console.log(`${GM_info.script.name}: updated acc:`)
-            // console.log(acc)
-
-
-
-
-            // if (! wpmbuckets.hasOwnProperty(''+wordCount)) {
-            //     wpmbuckets[''+wordCount] = []
-            // }
-            // let sec = ((segment.transcriptSegmentRenderer.endMs - segment.transcriptSegmentRenderer.startMs)/1000.0).toFixed(2)
-
-            // wpmbuckets[''+wordCount] = (wpmbuckets[''+wordCount] || []).concat([sec])
-
-            // wpmbuckets[''+wordCount].push(parseFloat(sec).toPrecision(3))
-
-            // console.log(`${GM_info.script.name}: returning acc = ${acc}`)
             return acc
         }, { "words": 0, "ms": 0} )
 
@@ -150,10 +130,6 @@ function run() {
         console.log(`${GM_info.script.name}: Total words: ${transcriptTotals.words} ; Total time: ${transcriptTotals.ms} ms ; wpm: ${wpm}`)
         setSpeed(wpmToSpeed(wpm))
 
-        let speedHistory = GM_getValue('SpeedHistory', [])
-        speedHistory.push({video: window.location.href.split("=")[1], words: transcriptTotals.words, time: `${(transcriptTotals.ms/1000).toFixed(2)} sec`, wpm: wpm.toFixed(2)})
-        GM_setValue('SpeedHistory', speedHistory)
-        console.log(speedHistory)
     })
 
     console.log(`${GM_info.script.name}: Transcript request sent`)
