@@ -2,8 +2,8 @@
 // @name         YouTube Hide Next Videos
 // @namespace    https://github.com/mkazin/OhMonkey
 // @author       Michael Kazin
-// @version      1.0
-// @description  Removes YouTube's algorithm suggestions
+// @version      1.1
+// @description  Removes YouTube's algorithm suggestions. Also shades watched videos.
 // @license      BSD-3-Clause
 // @match        https://*.youtube.com/*
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=youtube.com
@@ -21,3 +21,6 @@ const SELECTORS = [
 ]
 
 GM_addStyle(`${SELECTORS.join(",")} { display:none; }`)
+
+// Shades video thumbnails with a full progress bar
+GM_addStyle(`div#thumbnail:has(div#progress[style="width: 100%;"]) { opacity: 20%; }`)
