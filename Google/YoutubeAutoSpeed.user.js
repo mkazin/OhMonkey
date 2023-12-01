@@ -2,7 +2,7 @@
 // @name         YouTube Auto Speed
 // @namespace    https://github.com/mkazin/OhMonkey
 // @author       Michael Kazin
-// @version      1.1
+// @version      1.2
 // @description  Automatically adjusts playback speed by analyzing the video's transcript
 // @license      BSD-3-Clause
 // @match        https://www.youtube.com/watch?v=*
@@ -29,6 +29,8 @@ const MUSIC_TERMS = [
     "official hd video",
     "unplugged",
     "music awards",
+    "cover",
+    "acoustic"
 ]
 function wpmToSpeed(wpm) {
     for (let step of WPM_TABLE) {
@@ -70,6 +72,17 @@ function buildBody(context) {
        // This field is required. It's a Base64-encoded composite of several values. My initial effort only partially decoded it."
        "params": buildParams(videoId)
     }
+}
+
+function createNormalSpeedButton(currentSpeed) {
+    const container = document.querySelector("div#start")
+    const button = document.createElement("button")
+    button.onclick = () => {
+        setSpeed(1.0)
+        button.textContent = `Speed = 1.0x`
+    }
+    button.textContent = `Speed = ${currentSpeed}x`
+    container.appendChild(button)
 }
 
 function run() {
@@ -127,8 +140,9 @@ function run() {
 
         let wpm = transcriptTotals.words / (transcriptTotals.ms/60000.0)
         console.log(`${GM_info.script.name}: Total words: ${transcriptTotals.words} ; Total time: ${transcriptTotals.ms} ms ; wpm: ${wpm}`)
-        setSpeed(wpmToSpeed(wpm))
-
+        const newSpeed = wpmToSpeed(wpm)
+        setSpeed(newSpeed)
+        createNormalSpeedButton(newSpeed)
     })
 
     console.log(`${GM_info.script.name}: Transcript request sent`)
