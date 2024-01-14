@@ -1,0 +1,22 @@
+{
+  "name": "ohmonkey",
+  "version": "0.0.1",
+  "description": "A collection of GreaseMonkey/TamperMonkey scripts I wrote",
+  "main": "utils.js",
+  "scripts": {
+    "coverage": "npx jest --coverage",
+    "test": "npx jest",
+    "watch": "npx jest --watch"
+  },
+  "jest": {
+    "testEnvironment": "jsdom"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "jest-environment-jsdom": "^29.7.0",
+    "jsdom": "^23.2.0"
+  }
+}
