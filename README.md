@@ -7,6 +7,8 @@ A collection of GreaseMonkey/TamperMonkey scripts I wrote
 
  GreaseMonkey is the original and ran only on Mozilla Firefox. TamperMonkey was historically used on Google Chrome and other Chromium-based browsers, but has since been implemented on all browsers and is in more active development.
 
+<iframe src="http://penguinwrench.com/buymeacoffee.html" height=80 width=284>
+
 
 ## In Remembrance
 Lost but not forgotten are the following scripts I've written but sadly could not keep due to leaving a job:

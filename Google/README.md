@@ -1,5 +1,18 @@
 # Google Scripts
 
+
+## Google.com (search engine)
+
+### [Google Question Suggestion Remover](GoogleQuestionSuggestionRemover.user.js)
+Removes the "People also ask" section which lists even dumber questions people have asked:
+
+<img src="img/google-remove-question-suggestion.png" >
+
+Also removes the "What People are Saying" section, because people say things that are even dumber than the questions they ask.
+
+I didn't feel a need to split these into separate scripts. I'm on the fence about hiding videos. Let me know if you'd prefer otherwise.
+
+
 ## Bard - bard.google.com
 Google's Large Language Model AI chatbot
 
@@ -7,6 +20,10 @@ Google's Large Language Model AI chatbot
 Some genius designer put the button at the top of the response's text box.
 But Bard is verbose, so we often get scrolled away from it.
 Why should we need to scroll up to the top of the text just so it can read to us?
+
+### [Docs Gemini Hider](DocsGeminiHider.user.js)
+Hides "Try Gemini" button trying to get you to start a subscription trial
+
 
 ## Gmail - mail.google.com
 
@@ -26,7 +43,8 @@ Automatically adjusts the speed of videos based on a words-per-minute analysis o
 This is an early version and has many issues which could be addressed:
 * Speeds are hard-coded to pretty random values at the moment and require adjustment.
 * English and US centric.
-* Does not detect videos which should always play at normal speed (e.g. music)
+* Does not detect videos which should always play at normal speed
+** (update: v1.1 added a simplistic detection system to handle some music videos)
 
 Please create issues or submit pull requests for changes you want.
 

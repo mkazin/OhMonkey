@@ -2,7 +2,7 @@
 // @name         Amazon Subscribe & Save Total
 // @description  Shows total estimated cost of upcoming for Amazon subscription items
 // @author       https://github.com/mkazin
-// @version      0.3
+// @version      0.4
 // @license      BSD-3-Clause
 // @namespace    http://tampermonkey.net/
 // @grant        none
@@ -15,12 +15,21 @@
 (function() {
     'use strict';
 
-    const container = document.querySelector(".delivery-information-container");
+    const DELIVERY_ROW_SELECTOR = ".delivery-card-row"
+    const DETAIL_COMLUMN_SELECTOR = ".delivery-information-container"
+
+    document.querySelectorAll(DELIVERY_ROW_SELECTOR).forEach(deliveryRow => {
+        const container = deliveryRow.querySelector(DETAIL_COMLUMN_SELECTOR);
+
     //a-size-base-plus a-color-price subscription-price a-text-bold
-    const total = Array.from(document.querySelectorAll(".subscription-price")).map(el => Number(el.innerText.replace("$",""))).reduce( (acc, val) => acc + val)
+        const total = Array.from(deliveryRow.querySelectorAll(".subscription-price"))
+            .map(el => Number(el.innerText.replace("$", "")))
+            .reduce((acc, val) => acc + val)
 
-    const div = document.createElement("div")
-    div.innerText = `Total Cost: $${total.toFixed(2)}`
+        const div = document.createElement("div")
+        div.innerText = `Total Cost: $${total.toFixed(2)}`
 
-    container.appendChild(div)
+        container.appendChild(div)
+    })
+
 })();

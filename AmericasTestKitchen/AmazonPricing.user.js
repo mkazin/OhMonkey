@@ -10,60 +10,53 @@
 // @run-at       document-idle
 // ==/UserScript==
 
-const PRODUCT_URL_SELECTOR = "a.dropdown-module_affiliateDropdown__H040y"
+const AFFILIATE_DIV_SELECTOR = 'div[data-testid="affiliate-link"]'
 const ATK_PRICE_CLASS = "amazon-price"
 const ATK_PRICE_SELECTOR = `span.${ATK_PRICE_CLASS}`
 const AMZN_PRICE_SELECTOR = "span.a-price span.a-offscreen";
 
-// NOTE: modified code from Amazon\AmazonVariationPricer.user.js, 
+// NOTE: modified code from Amazon\AmazonVariationPricer.user.js,
 // updated to use GM_xmlhttpRequest to avoid CORS error
 async function populateWithPrice(productPriceElem, productUrl) {
-
     GM_xmlhttpRequest({
         method: "GET",
         url: productUrl,
-        onload: response => { 
-            var amznDOM = new DOMParser().parseFromString(response.responseText, 'text/html');
-
-            var amznPriceElem = amznDOM.querySelector(AMZN_PRICE_SELECTOR)
-            productPriceElem.innerText = amznPriceElem.innerText
-
-            // Once our first price is shown we should stop re-running the script
-            clearInterval(interval)
+        onload: response => {
+            const amznDOM = new DOMParser().parseFromString(response.responseText, 'text/html');
+            const amznPriceElem = amznDOM.querySelector(AMZN_PRICE_SELECTOR);
+            productPriceElem.innerText = amznPriceElem?.innerText || "?";
+            clearTimeout(timeoutId);
+        },
+        onerror: () => {
+            productPriceElem.innerText = "Failed";
         }
-    })
+    });
 }
 
-/** 
+/**
  * Prepares a new price element with temporary text to indicate processing,
  * updating style of neighboring elements to match the site's design
  */
 function createPriceElem(productAnchor) {
-    var priceDiv = document.createElement("span")
-    priceDiv.classList.add(ATK_PRICE_CLASS)
-    priceDiv.innerText = "..."
-    productAnchor.append(priceDiv)
+    const priceDiv = document.createElement("span");
+    priceDiv.classList.add(ATK_PRICE_CLASS);
+    priceDiv.innerText = "...";
+    productAnchor.querySelector("a").append(priceDiv);
 
-    // Let's move the right margin from the "Buy at Amazon" element to
-    // the price element and bring them close together
-    let buyAtAmazonElem = productAnchor.querySelector("p")
-    buyAtAmazonElem.style.marginRight = "6px"
-    priceDiv.style.marginRight = buyAtAmazonElem.style.marginRight
+    priceDiv.style.marginRight = "6px";
+    priceDiv.style.lineHeight = productAnchor.style.lineHeight;
 
-    // Finally, properties we want to match to "Buy at Amazon" text
-    priceDiv.style.lineHeight = buyAtAmazonElem.style.lineHeight
-
-    return priceDiv
+    return priceDiv;
 }
 
 function displayPrice(productAnchor) {
     var priceDiv = createPriceElem(productAnchor);
-    populateWithPrice(priceDiv, productAnchor.href)
+    populateWithPrice(priceDiv, productAnchor.querySelector("a").href)
 }
 
-let interval = setInterval( () => {
-    Array.from(document.querySelectorAll(PRODUCT_URL_SELECTOR))
-    .filter(anchor => ! anchor.querySelector(ATK_PRICE_SELECTOR))
-    .forEach(displayPrice)
+let timeoutId = setTimeout(() => {
+    Array.from(document.querySelectorAll(AFFILIATE_DIV_SELECTOR))
+        .filter(div => div.querySelector("a").href.includes("amazon"))
+        .forEach(displayPrice)
 }, 1000)
 
