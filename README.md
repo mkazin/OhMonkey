@@ -20,9 +20,6 @@ Feel free to create an issue to:
 
 Otherwise, if you like these and find them handy, let me know!
 
-<script type="text/javascript" src="https://cdnjs.buymeacoffee.com/1.0.0/button.prod.min.js" data-name="bmc-button" data-slug="mkazin" data-color="#BD5FFF" data-emoji="☕"  data-font="Cookie" data-text="Buy me a coffee" data-outline-color="#000000" data-font-color="#ffffff" data-coffee-color="#FFDD00" ></script>
-<!-- <iframe src="http://penguinwrench.com/buymeacoffee.html" height=80 width=284> -->
-
 
 ## In Remembrance
 Lost but not forgotten are the following scripts I've written but sadly could not keep due to leaving a job:
