@@ -5,18 +5,23 @@ beforeEach(() => {
     // Suppress console output for function's debug messages
     jest.spyOn(console, 'warn').mockImplementation(() => { });
     jest.spyOn(console, 'debug').mockImplementation(() => { });
+
+    // Reset the DOM for test isolation, I'm seeing bleeding from one to another
+    document.body.innerHTML = '';
+});
+
+afterEach(() => {
+    jest.restoreAllMocks();
 });
 
 describe('whenElementAppears', () => {
 
-    // Function correctly observes and calls function when element appears
     test('should observe and call function when element appears', async () => {
         const mockFn = jest.fn();
         const element = document.createElement('div');
         element.id = 'testElement';
 
         whenElementAppears('#testElement', mockFn);
-        whenElementAppears('#testElement', console.warn);
         expect(mockFn).not.toHaveBeenCalled();
 
         document.body.appendChild(element);
@@ -61,9 +66,6 @@ describe('whenElementAppears', () => {
         expect(mockFn.mock.calls).toHaveLength(1);
     });
 
-
-
-    // Function can handle multiple calls with different selectors and functions
     it('should handle multiple calls with different selectors and functions', async () => {
         const mockFn1 = jest.fn();
         const mockFn2 = jest.fn();
@@ -101,8 +103,6 @@ describe('whenElementAppears', () => {
         document.body.removeChild(element2);
     });
 
-
-    // Function can handle multiple calls with the same selectors and separate functions
     it('should handle multiple calls with the same selector and separate functions', async () => {
         const mockFn1 = jest.fn();
         const mockFn2 = jest.fn();
@@ -161,13 +161,12 @@ describe('whenElementAppears', () => {
         expect(ignoredFn).not.toHaveBeenCalledWith();
     })
 
-    // Function disconnects observer after calling function
     it('should disconnect observer after calling function', async () => {
         const mockFn = jest.fn();
         const element = document.createElement('div');
         element.id = 'testElement';
 
-        whenElementAppears('#testElement', mockFn);
+        const tracker = whenElementAppears('#testElement', mockFn);
 
         expect(mockFn).not.toHaveBeenCalled();
 
@@ -179,13 +178,12 @@ describe('whenElementAppears', () => {
         expect(mockFn).toHaveBeenCalled();
         expect(mockFn).toHaveBeenCalledWith(element);
 
-        const observer = element._observer;
-        expect(observer).toBeUndefined();
+        expect(tracker.disconnected).toBe(true);
+        expect(tracker.observer).toBe(null);
 
         document.body.removeChild(element);
     });
 
-    // Function does not call function if target element is removed before appearing
     it('should not call function if target element is removed before appearing', () => {
         const mockFn = jest.fn();
         const element = document.createElement('div');
@@ -203,8 +201,6 @@ describe('whenElementAppears', () => {
         expect(mockFn).not.toHaveBeenCalled();
     });
 
-
-    // Function does not call function if target element appears before observer is set up
     it('should not call function if target element appears before observer is set up', () => {
         const mockFn = jest.fn();
         const element = document.createElement('div');
@@ -219,6 +215,42 @@ describe('whenElementAppears', () => {
         document.body.removeChild(element);
     });
 
+    it('should not call function due to attribute changes in the target element', async () => {
+        const mockFn = jest.fn();
+        const element = document.createElement('div');
+        element.id = 'testElement';
+        element.dataset.att = 'original';
+        element.style.display = 'block';
+        document.body.appendChild(element);
+
+        const tracker = whenElementAppears('#testElement', mockFn, document);
+
+        element.dataset.att = 'changed';
+        await new Promise(process.nextTick);
+
+        expect(mockFn).not.toHaveBeenCalled();
+        tracker.disconnect();
+    });
+
+    it('should detect elements that appear within a shadow DOM', async () => {
+        const mockFn = jest.fn();
+        const hostElement = document.createElement('div');
+        const shadowRoot = hostElement.attachShadow({ mode: 'open' });
+        document.body.appendChild(hostElement);
+
+        whenElementAppears('#testElement', mockFn, document);
+        await new Promise(process.nextTick);
+
+        const element = document.createElement('div');
+        element.id = 'testElement';
+        shadowRoot.appendChild(element);
+        await new Promise(process.nextTick);
+
+        expect(mockFn).toHaveBeenCalled();
+        expect(mockFn).toHaveBeenCalledWith(element);
+
+        document.body.removeChild(hostElement);
+    });
 
 
     describe('Interval testing', () => {
