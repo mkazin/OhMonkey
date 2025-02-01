@@ -5,28 +5,34 @@ This code is vanilla JS and imports no runtime dependencies
 
 ## Observer.js
 
-Provides whenElementAppears() - A reusable, single-line MutationObserver utility function
+Provides whenElementAppears() - A reusable, single-line MutationObserver utility function.
 
 Allows scripts to wait for a specific selector to appear on the page prior to running a provided callback function. Whether due to lazy loading, or a high-latency script download.
 
 Replaces the numerous lines of fairly boilerplate code which is otherwise required to set up a single-mutation observer, a better technique than the less reliable timeout or interval implementation a developer would otherwise use as a hack.
 
-    Parameters:
-    @param {string} selector - CSS selector to be monitored
-    @param {function} fn - The callback function to invoke the selector is observed.
-    @param {DOM element} [observationTarget=document] - Optional node to observe for the appearance of the selector. If not provided, the entire DOM will be observed. Limiting the scope can yield better performance.
-    @returns {void}
+Returns an instance of the *ObserverTracker*  which allows users to have manual control over disconnecting the mutationObserver and otherwise track its status.
 
 Employs a [MutationObserver (MDN docs)](https://developer.mozilla.org/en-US/docs/Web/API/MutationObserver) to monitor DOM changes. See the documentation to understand the implementation.
+
+Version 0.0.3 introduced the ability to monitor within an existing [ShadowRoot](https://developer.mozilla.org/en-US/docs/Web/API/ShadowRoot). I'm still working on getting it to recognize new ShadowRoots that are attached after the observer is set up.
 
 ### Usage
 
 1. Import the code by adding the following to your userscript header:
 
         // @require      https://raw.githubusercontent.com/mkazin/OhMonkey/main/_Utils/Observer.js
-1. Pass delayed-execution code as a callback to the `whenElementAppears()`
+1. Pass delayed-execution code as a callback to `whenElementAppears()`
 
-Example: see my [YoutubeAutoSpeed.user.js](../Google/YoutubeAutoSpeed.user.js) userscript where this was first developed.
+    Parameters:
+    * @param {string} selector - CSS selector to be monitored
+    * @param {function} fn - The callback function to invoke the selector is observed.
+    * @param {DOM element} [observationTarget=document] - Optional node to observe for the appearance of the selector. If not provided, the entire DOM will be observed. Limiting the scope can yield better performance.
+    * @param {Number} [timeout] - Optional timeout in ms to disable observer. If set to 0, mutationobserver will continue to run until the selector is seen.
+    * @returns {ObserverTracker}
+
+### Example
+See my [YoutubeAutoSpeed.user.js](../Google/YoutubeAutoSpeed.user.js) userscript where this code was first developed.
 
 The function's original code was:
 
@@ -46,6 +52,12 @@ To delay the execution until after the `container` element appears in the DOM, i
         ...
         container.appendChild(button)
     }
+
+
+### Security Warning
+As with any browser script, importing code brings risk. Make sure you evaluate the code first. (Please do let me know if you find security concerns I can fix)
+
+I recommend avoiding linking directly to the raw copy of the file on the main branch. Rather I prefer to use a tagged version or even locking to a commit identifier which can't be tampered with should my account get hacked.
 
 ### Development / Contributions
 Pull requests, bug reports, and suggestions are welcome.

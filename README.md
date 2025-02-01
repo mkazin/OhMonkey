@@ -7,7 +7,21 @@ A collection of GreaseMonkey/TamperMonkey scripts I wrote
 
  GreaseMonkey is the original and ran only on Mozilla Firefox. TamperMonkey was historically used on Google Chrome and other Chromium-based browsers, but has since been implemented on all browsers and is in more active development.
 
-<iframe src="http://penguinwrench.com/buymeacoffee.html" height=80 width=284>
+
+## Support
+Feel free to create an issue to:
+* Report a bug
+* Suggest a feature
+* Request a new script
+
+  If it's something minor and I can access/use the site, I might just throw it together for you.
+
+  If you need something more complex, I might be available for hire. Check out my website for info.
+
+Otherwise, if you like these and find them handy, let me know!
+
+<script type="text/javascript" src="https://cdnjs.buymeacoffee.com/1.0.0/button.prod.min.js" data-name="bmc-button" data-slug="mkazin" data-color="#BD5FFF" data-emoji="☕"  data-font="Cookie" data-text="Buy me a coffee" data-outline-color="#000000" data-font-color="#ffffff" data-coffee-color="#FFDD00" ></script>
+<!-- <iframe src="http://penguinwrench.com/buymeacoffee.html" height=80 width=284> -->
 
 
 ## In Remembrance
