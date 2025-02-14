@@ -47,6 +47,6 @@ Lost but not forgotten are the following scripts I've written but sadly could no
   </details>
 
 
-## References, bookmarks, reading list
-* HOWTO: [Develop scripts in an IDE](https://stackoverflow.com/questions/41212558/develop-tampermonkey-scripts-in-a-real-ide-with-automatic-deployment-to-openuser) by Neithan Max
-* https://link.springer.com/content/pdf/10.1007/978-3-642-13911-6_16.pdf?pdf=inline%20link
+
+## Development
+See [Development.md](./DEVELOPMENT.md) for information on how to build scripts or help on how to run scripts located on your disk.
