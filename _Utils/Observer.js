@@ -27,7 +27,6 @@ class ObserverTracker {
 
         this.observer = new MutationObserver(async (mutations, mutationObserver) => {
             await this.handleMutations(mutations)
-            logMutations(mutations)
         })
         this.observer.observe(observationTarget, {
             childList: true,
