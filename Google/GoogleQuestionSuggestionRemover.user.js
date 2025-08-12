@@ -5,8 +5,8 @@
 // @version      1.0
 // @description  Removes the unhelpful sections in Google suggesting worse questions to ask
 // @license      BSD-3-Clause
-// @match        https://google.com/search?*
-// @match        https://www.google.com/search?*
+// @match        https://google.com/search*
+// @match        https://www.google.com/search*
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=google.com
 // @run-at       document-start
 // @grant        GM_addStyle

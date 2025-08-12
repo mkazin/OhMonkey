@@ -19,6 +19,10 @@ const SELECTORS_TO_HIDE = [
     "div.ytp-endscreen-content",
     // "Related" panel
     "div#related",
+    // YouTube "Playables"
+    // The part preceeding ~ in this selector can also get rid of both Playables and "Shorts".
+    // Replace everything starting with ~ to get rid of both.
+    "ytd-rich-section-renderer.style-scope.ytd-rich-grid-renderer:has(h2) ~ ytd-rich-section-renderer.style-scope.ytd-rich-grid-renderer:has(h2)",
 ]
 
 GM_addStyle(`${SELECTORS_TO_HIDE.join(",")} { display:none; }`)
