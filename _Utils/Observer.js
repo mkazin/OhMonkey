@@ -14,11 +14,9 @@
  * @param {Boolean} [disconnectOnDetect] - Optional flag to disable automatic disconnection of the observer after the first invocation.
  * @param {string} [debugName] - Optional prefix text for debugging purposes, defaults to "ObserverTracker".
  */
-
 class ObserverTracker {
-    // TODO: make these private- see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes/Private_elements
     // To avoid garbage collection
-    static TRACKER_LIST = []
+    static #TRACKER_LIST = []
 
     constructor(selector, fn, observationTarget, timeout = null, disconnectOnDetect = true, debugName) {
         this.observer = null;
@@ -28,9 +26,11 @@ class ObserverTracker {
         this.timeout = timeout
         this.disconnectOnDetect = disconnectOnDetect
         this.debugName = `${debugName  || "ObserverTracker"}:`
-        this.disconnected = false
+        this.wasDisconnected = false
         this.shadowrootTrackers = []
-        ObserverTracker.TRACKER_LIST.push(this)
+        ObserverTracker.#TRACKER_LIST.push(this)
+
+        this.uid = window.crypto.randomUUID()
 
         // TBD: should an existing selector yield an immediate invocation and not set up an observer if disconnectOnDetect is true?
 
@@ -46,7 +46,7 @@ class ObserverTracker {
         if (timeout) {
             setTimeout(() => {
                 this.disconnect();
-                console.log(`${this.debugName} disconnected on timeout`);
+                console.debug(`${this.debugName} disconnected on timeout`);
             }, timeout);
         }
 
@@ -66,41 +66,35 @@ class ObserverTracker {
         this.observer?.disconnect()
         this.shadowrootTrackers.forEach(st => st.disconnect());
         this.shadowrootTrackers = []
-        this.disconnected = true
+        this.wasDisconnected = true
         this.observer = null
-        // TBD: Is locking necessary on splice()? See https://www.npmjs.com/package/async-mutex as possible library to use.
-        ObserverTracker.TRACKER_LIST.splice(ObserverTracker.TRACKER_LIST.indexOf(this), 1);
+        ObserverTracker.#TRACKER_LIST.splice(ObserverTracker.#TRACKER_LIST.indexOf(this), 1);
     }
 
     async handleMutations(mutations) {
-        // Search mutations where nodes were added for a node matching the selector
-        if (this.disconnected) {
+        if (this.wasDisconnected) {
             console.debug(`${this.debugName} already disconnected, skipping mutation handling`);
             return;
         }
-        const foundTarget = mutations.flatMap(
-            mutation => Array.from(mutation.addedNodes))
-            .map(node =>
-                node.matches && node.matches(this.selector) ? node :
-                node.querySelector && node.querySelector(this.selector))[0] || undefined
-
         const foundTargets = mutations.flatMap(
             mutation => Array.from(mutation.addedNodes))
-            .filter(node => node.matches && node.querySelector(this.selector))
+            .filter(node => node.matches && (node.matches(this.selector) || node.querySelector(this.selector)))
             .map(node => node.matches(this.selector) ? node : node.querySelector(this.selector));
 
-        if (foundTarget) {
-            try {
-                console.debug(`${this.debugName} invoking callback for ${this.selector}`);
-                this.fn(foundTarget);
-                if (this.disconnectOnDetect) {
-                    this.disconnect();
+        if (foundTargets.length > 0) {
+            foundTargets.forEach(foundTarget => {
+                try {
+                    console.debug(`${this.debugName} invoking callback for ${this.selector}`);
+                    this.fn(foundTarget);
+                    if (this.disconnectOnDetect) {
+                        this.disconnect();
+                    }
+                    return;
+                } catch (error) {
+                    // TBD: provide users with an error callback instead?
+                    console.error(`${this.debugName} unexpected error...`, error);
                 }
-                return;
-            } catch (error) {
-                // TBD: provide users with an error callback instead?
-                console.error(`${this.debugName} unexpected error...`, error);
-            }
+            });
         } else {
             // TBD: I think I need to add handling in case disconnectAfterDetection is false
             mutations.forEach(mutation => {
@@ -122,15 +116,25 @@ class ObserverTracker {
 
         }
     }
+
+    static generateRandomUUID() {
+        return `observer#${ObserverTracker.#TRACKER_LIST.length}`;
+    }
+
+    toString() {
+        return `ObserverTracker ${this.debugName}: watching for ${this.selector} on ${this.observationTarget}, wasDisconnected=${this.wasDisconnected})`;
+    }
 }
 
 
-function onceElementAppears(selector, fn, observationTarget = document, timeout = 0) {
-    return new ObserverTracker(selector, fn, observationTarget, timeout, true, "onceElementAppears")
+function onceElementAppears(selector, fn, observationTarget = document, timeout = 0, debugName = "onceElementAppears") {
+    console.debug(`onceElementAppears(${selector}, (fn), ${observationTarget}, ${timeout}, "${debugName}")`)
+    return new ObserverTracker(selector, fn, observationTarget, timeout, true, debugName)
 }
 
-function wheneverElementAppears(selector, fn, observationTarget = document, timeout = 0) {
-    return new ObserverTracker(selector, fn, observationTarget, timeout, false, "wheneverElementAppears")
+function wheneverElementAppears(selector, fn, observationTarget = document, timeout = 0, debugName = "wheneverElementAppears") {
+    console.debug(`wheneverElementAppears(${selector}, (fn), ${observationTarget}, ${timeout}, "${debugName}")`)
+    return new ObserverTracker(selector, fn, observationTarget, timeout, false, debugName)
 }
 
 // Expose for userscript (@require) and Node

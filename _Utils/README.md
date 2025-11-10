@@ -31,19 +31,23 @@ Version 0.0.3 introduced the ability to monitor within an existing [ShadowRoot](
     * @param {Number} [timeout] - Optional timeout in ms to disable observer. If set to 0, mutationobserver will continue to run until the selector is seen.
     * @returns {ObserverTracker}
 
-### Example
-See my [YoutubeAutoSpeed.user.js](../Google/YoutubeAutoSpeed.user.js) userscript where this code was first developed.
+### Examples
 
-The function's original code was:
+1. Waiting for a site event - a frequent use of MutationObserver is waiting until a website loads asynchronously. Sometimes setting `@run-at` to `document-idle` is sufficient and the correct way to go. Other sites may have Javascript which runs even later.
 
-    const container = document.querySelector("div#start")
-    const button = document.createElement("button")
-    button.onclick = () => {
-            setSpeed(1.0)
-            button.textContent = `Speed = 1.0x`
-        }
-    button.textContent = `Speed = ${currentSpeed}x`
-    container.appendChild(button)
+YouTube video pages are one example where a necessary element is not available at the time the GreaseMonkey script runs. My
+[YoutubeAutoSpeed.user.js](../Google/YoutubeAutoSpeed.user.js) userscript adds a button on the page to allow quickly let a user reset the playback speed to 1x- handy for when the script's code makes a false negative decision on a video where playback shouldn't be adjusted.
+
+To delay the execution until after the `container` element appears in the DOM, it was wrapped with the following code which passes in that element:
+
+    onceElementAppears("div#start", (container) => {
+        const button = document.createElement("button")
+        ...
+        container.appendChild(button)
+    }
+
+2. Another example of pages which load over time is infinite scrolling. In this case, we want a long-running MutationObserver. For this use case we can use the `wheneverElementAppears` function,
+which sets *ObserverTracker*'s `disconnectOnDetect` to `false`.
 
 To delay the execution until after the `container` element appears in the DOM, it was wrapped with the following code which passes in that element:
 
@@ -52,6 +56,9 @@ To delay the execution until after the `container` element appears in the DOM, i
         ...
         container.appendChild(button)
     }
+
+3. Tracking changes to an element over time- On the Boston Globe's website the page for a newspaper story displays a counter of the number of reader comments and is updated as new comments come in. This code observes the comment counter's element and console logs the element's text each time it changes. Since we want to track more than a single change, we can also use the *wheneverElementAppears* function or set disconnectOnDetect to false.
+window.wheneverElementAppears("span.sharebar_comment_count", (e) => console.log(`Comment count: ${e.textContent}`));
 
 
 ### Security Warning
@@ -84,4 +91,3 @@ I expect code using it would also look better, especially as it's currently taki
     .then(desiredElement => ...)
 
 Timeouts are another possible addition to allow developers to improve user experience when the code will not execute, such as running some fallback or cleanup code.
-
