@@ -1,0 +1,9 @@
+{
+    "jest.runMode": "on-demand",
+    "jest.rootPath": ".",
+    "testing.automaticallyOpenPeekView": "never",
+    "jest.jestCommandLine": "npx jest",
+    "editor.trimWhitespaceOnDelete": true,
+    "files.trimFinalNewlines": true,
+    "files.trimTrailingWhitespace": true
+}

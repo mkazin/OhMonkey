@@ -7,7 +7,10 @@
 // @license     BSD-3-Clause
 // @match       http://*.bostonglobe.com/*
 // @match       https://www.bostonglobe.com/*
+// @require     https://github.com/mkazin/OhMonkey/raw/refs/tags/observer-v0.0.4/_Utils/Observer.js
 // ==/UserScript==
+
+import { ObserverTracker } from 'https://github.com/mkazin/OhMonkey/raw/refs/tags/observer-v0.0.4/_Utils/Observer.js';
 
 const SPORTS_TERMS = ['Football', 'NFL', 'Damar Hamlin',
                       'Basketball', 'NBA', 'Celtics',
@@ -73,19 +76,12 @@ window.cleanSportsPosts = function() {
         removeMatchingElementsContainingText("h2.headline span", term, grandparentNavigator)
     })
 };
+console.log(ObserverTracker)
 
-// Observe changes in the page and reapply.
-// Taken from Navneet Khare's fantastic "Remove Sponsored Posts" TamperMonkey script at:
-// https://openuserjs.org/install/finitenessofinfinity/Remove_Sponsored_Posts.user.js
-var MutationObserver = window.MutationObserver || window.WebKitMutationObserver;
-var target = document.getElementsByTagName("body")[0];
-var config = { attributes: true, childList: true, characterData: true };
-
-var mutationObserver = new MutationObserver(function(mutations) {
-  cleanSportsPosts();
-});
-
-mutationObserver.observe(target, config);
+async function run() {
+    whenElementAppears("body", cleanSportsPosts);
+}
+run();
 cleanSportsPosts();
 
 

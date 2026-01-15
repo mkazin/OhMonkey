@@ -2,7 +2,7 @@
 // @name         YouTube No Comment
 // @namespace    https://github.com/mkazin/OhMonkey
 // @author       Michael Kazin
-// @version      1.0
+// @version      1.1
 // @description  Hides comments to help you avoid engaging
 // @license      BSD-3-Clause
 // @match        https://*.youtube.com/*
@@ -20,10 +20,12 @@ const SELECTORS = [
     "#comments #action-buttons",
     // Entire comments section
     "#comments",
+    // Chat for live streams
+    "#chat-container",
     // Buttons on shorts videos (youtube.com/shorts/)
     "div#like-button",
     "div#comments-button",
 ]
 
-GM_addStyle(`${SELECTORS.join(",")} { display:none; }`)
+GM_addStyle(`${SELECTORS.join(", ")} { display:none; }`)
 

@@ -5,18 +5,18 @@
   "main": "utils.js",
   "scripts": {
     "coverage": "npx jest --coverage",
-    "test": "npx jest",
+    "test": "npx --experimental-vm-module jest",
     "watch": "npx jest --watch"
   },
-  "jest": {
-    "testEnvironment": "jsdom"
-  },
+  "engines": {},
   "keywords": [],
   "author": "",
   "license": "ISC",
   "devDependencies": {
     "jest": "^29.7.0",
     "jest-environment-jsdom": "^29.7.0",
-    "jsdom": "^23.2.0"
+    "jsdom": "^27.1.0"
+
+    ,"brace-expansion": "^1.1.12"
   }
 }

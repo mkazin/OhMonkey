@@ -1,39 +1,195 @@
+let document;
+const { ObserverTracker, onceElementAppears, wheneverElementAppears } = require('../../_Utils/Observer')
 
-const whenElementAppears = require('../../_Utils/Observer')
+/**
+ * Mock MutationObserver for testing ObserverTracker
+ *
+ * This mock allows you to simulate DOM mutations without relying on real DOM changes.
+ * It provides helper methods to simulate different types of mutations that would
+ * normally be detected by a real MutationObserver.
+ *
+ * Usage:
+ * 1. Replace global MutationObserver with this mock in beforeEach()
+ * 2. Create your ObserverTracker instance
+ * 3. Get the mock instance with MockMutationObserver.getLastInstance()
+ * 4. Use simulateAddedNodes(), simulateRemovedNodes(), etc. to trigger mutations
+ *
+ * Example:
+ *   const tracker = onceElementAppears('#test', callback);
+ *   const mockObserver = MockMutationObserver.getLastInstance();
+ *   document.body.appendChild(targetElement);
+ *   mockObserver.simulateAddedNodes([targetElement]);
+ */
+class MockMutationObserver {
+    constructor(callback) {
+        this.callback = callback;
+        this.observedTargets = [];
+        this.isObserving = false;
+        MockMutationObserver.instances.push(this);
+    }
+
+    observe(target, options) {
+        this.observedTargets.push({ target, options });
+        this.isObserving = true;
+    }
+
+    disconnect() {
+        this.isObserving = false;
+        this.observedTargets = [];
+    }
+
+    takeRecords() {
+        return [];
+    }
+
+    // Test helper methods
+    simulateAddedNodes(addedNodes, target = null) {
+
+        if (!this.isObserving) return;
+
+        const mutationRecord = {
+            type: 'childList',
+            target: target || this.observedTargets[0]?.target || document.body,
+            addedNodes: Array.isArray(addedNodes) ? addedNodes : [addedNodes],
+            removedNodes: [],
+            previousSibling: null,
+            nextSibling: null,
+            attributeName: null,
+            attributeNamespace: null,
+            oldValue: null
+        };
+
+        this.callback([mutationRecord], this);
+    }
+
+    simulateRemovedNodes(removedNodes, target = null) {
+        if (!this.isObserving) return;
+
+        const mutationRecord = {
+            type: 'childList',
+            target: target || this.observedTargets[0]?.target || document.body,
+            addedNodes: [],
+            removedNodes: Array.isArray(removedNodes) ? removedNodes : [removedNodes],
+            previousSibling: null,
+            nextSibling: null,
+            attributeName: null,
+            attributeNamespace: null,
+            oldValue: null
+        };
+
+        this.callback([mutationRecord], this);
+    }
+
+    simulateAttributeChange(target, attributeName, oldValue = null) {
+        if (!this.isObserving) return;
+
+        const mutationRecord = {
+            type: 'attributes',
+            target: target,
+            addedNodes: [],
+            removedNodes: [],
+            previousSibling: null,
+            nextSibling: null,
+            attributeName: attributeName,
+            attributeNamespace: null,
+            oldValue: oldValue
+        };
+
+        this.callback([mutationRecord], this);
+    }
+
+    // Static methods for test management
+    static instances = [];
+
+    static clearInstances() {
+        this.instances = [];
+    }
+
+    static getLastInstance() {
+        return this.instances[this.instances.length - 1];
+    }
+
+    static getAllInstances() {
+        return this.instances;
+    }
+}
+
+window.randomUUID = crypto.randomUUID || (() => 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+    const r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);
+    return v.toString(16);
+}));
 
 beforeEach(() => {
     // Suppress console output for function's debug messages
     jest.spyOn(console, 'warn').mockImplementation(() => { });
     jest.spyOn(console, 'debug').mockImplementation(() => { });
 
-    // Reset the DOM for test isolation, I'm seeing bleeding from one to another
+    // Use the Jest-provided global document/window so MutationObserver.observe
+    // receives Node instances from the same realm as the observer.
+    document = global.document;
+
+    // Replace MutationObserver with our mock
+    global.MutationObserver = MockMutationObserver;
+    MockMutationObserver.clearInstances();
+
+    // Reset the DOM for test isolation
     document.body.innerHTML = '';
 });
 
 afterEach(() => {
     jest.restoreAllMocks();
+    MockMutationObserver.clearInstances();
 });
 
-describe('whenElementAppears', () => {
+describe('Exports', () => {
+
+    test('should export onceElementAppears function', () => {
+        expect(typeof onceElementAppears).toBe('function');
+    });
+    test('window should have onceElementAppears function', () => {
+        expect(typeof window.onceElementAppears).toBe('function');
+    });
+    test('should export wheneverElementAppears function', () => {
+        expect(typeof wheneverElementAppears).toBe('function');
+    });
+    test('window should have wheneverElementAppears function', () => {
+        expect(typeof window.wheneverElementAppears).toBe('function');
+    });
+    test('should export ObserverTracker class', () => {
+        expect(typeof ObserverTracker).toBe('function');
+    });
+});
+
+describe('onceElementAppears', () => {
 
     test('should observe and call function when element appears', async () => {
         const mockFn = jest.fn();
-        const element = document.createElement('div');
-        element.id = 'testElement';
+        const targetElement = document.createElement('div');
+        targetElement.id = 'testElement';
+        document.body.appendChild(targetElement);
 
-        whenElementAppears('#testElement', mockFn);
+        // Create the observer
+        const tracker = onceElementAppears('#testElement', mockFn, document);
         expect(mockFn).not.toHaveBeenCalled();
 
-        document.body.appendChild(element);
-        await new Promise(process.nextTick);
+        // Get the mock MutationObserver instance
+        const mockObserver = MockMutationObserver.getLastInstance();
+        expect(mockObserver).toBeDefined();
+        expect(mockObserver.isObserving).toBe(true);
+
+        mockObserver.simulateAddedNodes([targetElement], document.body);
 
         expect(mockFn.mock.calls).toHaveLength(1);
-        expect(mockFn).toHaveBeenCalledWith(element);
+        expect(mockFn).toHaveBeenCalledWith(targetElement);
 
-        // Further DOM changes should not trigger invocations
-        element.style.display = 'block';
-        document.body.removeChild(element);
-        await new Promise(process.nextTick);
+        // Verify observer was disconnected after first detection (onceElementAppears behavior)
+        expect(mockObserver.isObserving).toBe(false);
+
+        // Further mutations should not trigger the callback since observer was disconnected
+        const anotherElement = document.createElement('div');
+        anotherElement.id = 'testElement';
+        document.body.appendChild(anotherElement);
+        mockObserver.simulateAddedNodes([anotherElement], document.body);
         expect(mockFn.mock.calls).toHaveLength(1);
     });
 
@@ -41,29 +197,33 @@ describe('whenElementAppears', () => {
         const mockFn = jest.fn();
         const firstChild = document.createElement('div');
         const secondChild = document.createElement('div');
-        const targetElement = document.createElement('div')
-        document.body.appendChild(firstChild)
-        document.body.appendChild(secondChild)
-        document.body.id = 'body'
-        targetElement.id = "target"
-        firstChild.id = 'firstChild'
-        secondChild.id = 'secondChild'
-        whenElementAppears('#target', mockFn);
+        const targetElement = document.createElement('div');
+
+        targetElement.id = "target";
+        firstChild.id = 'firstChild';
+        secondChild.id = 'secondChild';
+
+        // Create the observer
+        onceElementAppears('#target', mockFn);
         expect(mockFn).not.toHaveBeenCalled();
 
-        // The following changes generate three childList mutation records
-        firstChild.appendChild(targetElement)
-        secondChild.appendChild(targetElement)
-        await new Promise(process.nextTick);
+        const mockObserver = MockMutationObserver.getLastInstance();
+
+        // Simulate multiple mutations - first without target, then with target
+        mockObserver.simulateAddedNodes([firstChild], document.body);
+        expect(mockFn).not.toHaveBeenCalled();
+
+        mockObserver.simulateAddedNodes([secondChild], document.body);
+        expect(mockFn).not.toHaveBeenCalled();
+
+        // Now simulate adding the target element directly
+        mockObserver.simulateAddedNodes([targetElement], firstChild);
 
         expect(mockFn.mock.calls).toHaveLength(1);
         expect(mockFn).toHaveBeenCalledWith(targetElement);
 
-        // Further DOM changes should not trigger invocations
-        targetElement.style.display = 'block';
-        targetElement.remove();
-        await new Promise(process.nextTick);
-        expect(mockFn.mock.calls).toHaveLength(1);
+        // Verify observer was disconnected after first detection
+        expect(mockObserver.isObserving).toBe(false);
     });
 
     it('should handle multiple calls with different selectors and functions', async () => {
@@ -75,15 +235,17 @@ describe('whenElementAppears', () => {
         const element2 = document.createElement('div');
         element2.id = 'testElement2';
 
-        whenElementAppears('#testElement1', mockFn1);
-        whenElementAppears('#testElement2', mockFn2);
+        onceElementAppears('#testElement1', mockFn1);
+        const mockObserver1 = MockMutationObserver.getLastInstance();
+        onceElementAppears('#testElement2', mockFn2);
+        const mockObserver2 = MockMutationObserver.getLastInstance();
 
         expect(mockFn1).not.toHaveBeenCalled();
         expect(mockFn2).not.toHaveBeenCalled();
 
-        // Appending the first element should only trigger the first callback
+        // Simulate multiple mutations - first without target, then with target
         document.body.appendChild(element1);
-        await new Promise(process.nextTick);
+        mockObserver1.simulateAddedNodes([element1], document.body);
 
         expect(mockFn1).toHaveBeenCalled();
         expect(mockFn1).toHaveBeenCalledWith(element1);
@@ -92,15 +254,12 @@ describe('whenElementAppears', () => {
         // Appending the second element should only trigger the second call,
         // the first selector should no longer be observed
         document.body.appendChild(element2);
-        await new Promise(process.nextTick);
+        mockObserver2.simulateAddedNodes([element2], document.body);
 
         expect(mockFn2).toHaveBeenCalled();
         expect(mockFn2).toHaveBeenCalledWith(element2);
         expect(mockFn1.mock.calls).toHaveLength(1);
         expect(mockFn2.mock.calls).toHaveLength(1);
-
-        document.body.removeChild(element1);
-        document.body.removeChild(element2);
     });
 
     it('should handle multiple calls with the same selector and separate functions', async () => {
@@ -109,15 +268,18 @@ describe('whenElementAppears', () => {
         const element = document.createElement('div');
         element.id = 'testElement';
 
-        whenElementAppears('#testElement', mockFn1);
-        whenElementAppears('#testElement', mockFn2);
+        onceElementAppears('#testElement', mockFn1);
+        const mockObserver1 = MockMutationObserver.getLastInstance();
+        onceElementAppears('#testElement', mockFn2);
+        const mockObserver2 = MockMutationObserver.getLastInstance();
 
         expect(mockFn1).not.toHaveBeenCalled();
         expect(mockFn2).not.toHaveBeenCalled();
 
         // Appending the first element should only trigger the first callback
+        mockObserver1.simulateAddedNodes([element], document.body);
+        mockObserver2.simulateAddedNodes([element], document.body);
         document.body.appendChild(element);
-        await new Promise(process.nextTick);
 
         expect(mockFn1).toHaveBeenCalled();
         expect(mockFn1).toHaveBeenCalledWith(element);
@@ -144,7 +306,8 @@ describe('whenElementAppears', () => {
         observedElement.id = 'observedElement'
         observedElement.className = 'observationSelector'
 
-        whenElementAppears('.observationSelector', observedFn, observationTarget = observedBranch);
+        onceElementAppears('.observationSelector', observedFn, observedBranch);
+        const mockObserver = MockMutationObserver.getLastInstance();
 
         expect(ignoredFn).not.toHaveBeenCalled();
         expect(observedFn).not.toHaveBeenCalled();
@@ -152,7 +315,7 @@ describe('whenElementAppears', () => {
         // Append elements with the desired selector to their respective branches
         ignoredBranch.appendChild(ignoredElement);
         observedBranch.appendChild(observedElement);
-        await new Promise(process.nextTick);
+        mockObserver.simulateAddedNodes([observedElement], observedBranch);
 
         // Only one branch's should generate a mutation and have its callback invoked
         expect(observedFn.mock.calls).toHaveLength(1);
@@ -166,19 +329,20 @@ describe('whenElementAppears', () => {
         const element = document.createElement('div');
         element.id = 'testElement';
 
-        const tracker = whenElementAppears('#testElement', mockFn);
+        const tracker = onceElementAppears('#testElement', mockFn);
+        const mockObserver = MockMutationObserver.getLastInstance();
 
         expect(mockFn).not.toHaveBeenCalled();
 
         element.style.display = 'block';
         document.body.appendChild(element);
-        await new Promise(process.nextTick);
+        mockObserver.simulateAddedNodes([element], document.body);
 
         expect(mockFn.mock.calls).toHaveLength(1);
         expect(mockFn).toHaveBeenCalled();
         expect(mockFn).toHaveBeenCalledWith(element);
 
-        expect(tracker.disconnected).toBe(true);
+        expect(tracker.wasDisconnected).toBe(true);
         expect(tracker.observer).toBe(null);
 
         document.body.removeChild(element);
@@ -190,11 +354,13 @@ describe('whenElementAppears', () => {
         element.id = 'testElement';
         document.body.appendChild(element);
 
-        whenElementAppears('#testElement', mockFn);
+        onceElementAppears('#testElement', mockFn);
+        const mockObserver = MockMutationObserver.getLastInstance();
 
         expect(mockFn).not.toHaveBeenCalled();
 
         document.body.removeChild(element);
+        mockObserver.simulateRemovedNodes([element], document.body);
 
         element.style.display = 'block';
 
@@ -208,7 +374,13 @@ describe('whenElementAppears', () => {
         element.style.display = 'block';
         document.body.appendChild(element);
 
-        whenElementAppears('#testElement', mockFn);
+        onceElementAppears('#testElement', mockFn);
+        const mockObserver = MockMutationObserver.getLastInstance();
+
+        const otherElement = document.createElement('div');
+        otherElement.id = 'otherElement';
+        document.body.appendChild(otherElement);
+        mockObserver.simulateAddedNodes([otherElement], document.body);
 
         expect(mockFn).not.toHaveBeenCalled();
 
@@ -223,13 +395,57 @@ describe('whenElementAppears', () => {
         element.style.display = 'block';
         document.body.appendChild(element);
 
-        const tracker = whenElementAppears('#testElement', mockFn, document);
+        const tracker = onceElementAppears('#testElement', mockFn, document);
+        const mockObserver = MockMutationObserver.getLastInstance();
 
         element.dataset.att = 'changed';
-        await new Promise(process.nextTick);
+        mockObserver.simulateAttributeChange(element, 'data-att', 'original', 'changed');
 
         expect(mockFn).not.toHaveBeenCalled();
         tracker.disconnect();
+    });
+
+    it('should detect and return a matching descendent of a mutated element ', async () => {
+        const mockFn = jest.fn();
+        const parentElement = document.createElement('div');
+        const childElement = document.createElement('div');
+        childElement.id = 'testElement';
+        parentElement.appendChild(childElement);
+
+        const tracker = onceElementAppears('#testElement', mockFn, document);
+        const mockObserver = MockMutationObserver.getLastInstance();
+
+        // Simulate a mutation that adds the parent element
+        document.body.appendChild(parentElement);
+        mockObserver.simulateAddedNodes([parentElement], document.body);
+
+        expect(mockFn).toHaveBeenCalled();
+        expect(mockFn).toHaveBeenCalledWith(childElement);
+
+        tracker.disconnect();
+    });
+
+    it('should it detect a pre-existing selector element that is moved into an observed element?', async () => {
+        const mockFn = jest.fn();
+        const originParentElement = document.createElement('div');
+        const childElement = document.createElement('div');
+        childElement.id = 'testElement';
+        originParentElement.appendChild(childElement);
+        document.body.appendChild(originParentElement);
+
+        const tracker = onceElementAppears('#testElement', mockFn, document);
+        const mockObserver = MockMutationObserver.getLastInstance();
+
+        // Simulate a mutation that moves the child element
+        const targetParentElement = document.createElement('div');
+        targetParentElement.appendChild(childElement);
+        document.body.appendChild(targetParentElement);
+        mockObserver.simulateRemovedNodes([childElement], originParentElement);
+        mockObserver.simulateAddedNodes([targetParentElement], document.body);
+
+        expect(mockFn).toHaveBeenCalled();
+        expect(mockFn.mock.calls).toHaveLength(1);
+        expect(mockFn).toHaveBeenCalledWith(childElement);
     });
 
     it('should detect elements that appear within a shadow DOM', async () => {
@@ -238,13 +454,13 @@ describe('whenElementAppears', () => {
         const shadowRoot = hostElement.attachShadow({ mode: 'open' });
         document.body.appendChild(hostElement);
 
-        whenElementAppears('#testElement', mockFn, document);
-        await new Promise(process.nextTick);
+        onceElementAppears('#testElement', mockFn, document);
+        const mockObserver = MockMutationObserver.getLastInstance();
 
         const element = document.createElement('div');
         element.id = 'testElement';
         shadowRoot.appendChild(element);
-        await new Promise(process.nextTick);
+        mockObserver.simulateAddedNodes([element], shadowRoot);
 
         expect(mockFn).toHaveBeenCalled();
         expect(mockFn).toHaveBeenCalledWith(element);
@@ -253,58 +469,76 @@ describe('whenElementAppears', () => {
     });
 
 
-    describe('Interval testing', () => {
-        it('should disable the mutation observer when the specified interval elapses, having invoked the callback', async () => {
-            jest.useFakeTimers();
+    describe('Timeout testing', () => {
+        let tracker;
 
-            const TEST_INTERVAL = 1000;
+        beforeEach(() => {
+            jest.useFakeTimers();
+        });
+
+        afterEach(() => {
+            if (tracker) {
+                tracker.disconnect();
+            }
+            jest.useRealTimers();
+            jest.clearAllTimers();
+        });
+
+        it('should disable the mutation observer when invoking the callback before the timeout elapses', () => {
+            const TEST_TIMEOUT = 1000;
             const mockFn = jest.fn();
             const element = document.createElement('div');
             element.id = 'testElement';
 
-            whenElementAppears('#testElement', mockFn, observationTarget = document, interval = TEST_INTERVAL);
-
-            // setTimeout(() => { document.body.appendChild(element); }, TEST_INTERVAL * 0.95);
-
-            expect(mockFn).not.toHaveBeenCalled();
+            tracker = onceElementAppears('#testElement', mockFn, document, TEST_TIMEOUT);
+            const mockObserver = MockMutationObserver.getLastInstance();
 
             // Advance not enough time to trigger the disabling interval
-            jest.advanceTimersByTime(TEST_INTERVAL / 2);
+            jest.advanceTimersByTime(TEST_TIMEOUT / 2);
             expect(mockFn).not.toHaveBeenCalled();
+            expect(tracker.wasDisconnected).toBe(false);
 
             // Trigger the callback by providing the observer a selector target
-            jest.useRealTimers();
             document.body.appendChild(element);
-            await new Promise(process.nextTick);
+            mockObserver.simulateAddedNodes([element], document.body);
 
-            expect(mockFn).toHaveBeenCalled();
             expect(mockFn).toHaveBeenCalledWith(element);
+            expect(tracker.wasDisconnected).toBe(true);
+            expect(mockObserver.isObserving).toBe(false);
+
+            // Advance past original timeout — nothing additional should happen
+            jest.advanceTimersByTime(TEST_TIMEOUT * 2);
+            expect(tracker.wasDisconnected).toBe(true);
+            expect(mockFn.mock.calls.length).toBe(1);
+
+            // Try to trigger a second callback, which should not work since the observer is disconnected
+            const secondElement = element.cloneNode(true);
+            document.body.appendChild(secondElement);
+            mockObserver.simulateAddedNodes([secondElement], document.body);
+            expect(mockFn.mock.calls.length).toBe(1);
         });
 
-        it('should disable the mutation observer when the specified interval elapses, without invoking the callback', async () => {
-            jest.useFakeTimers();
-
-            const TEST_INTERVAL = 1000;
+        it('should disable the mutation observer on timeout, without invoking the callback', () => {
+            const TEST_TIMEOUT = 1000;
             const mockFn = jest.fn();
             const nonMatchingElement = document.createElement('div');
             nonMatchingElement.id = 'testElement';
 
-            whenElementAppears('#ImpossibleElement', mockFn, observationTarget = document, interval = TEST_INTERVAL);
+            tracker = onceElementAppears('#ImpossibleElement', mockFn, document, TEST_TIMEOUT);
+            const mockObserver = MockMutationObserver.getLastInstance();
 
+            // Run time forward a bit, trigger the mutation observer, with a non-matching target
+            jest.advanceTimersByTime(TEST_TIMEOUT / 2);
             expect(mockFn).not.toHaveBeenCalled();
-
-            jest.advanceTimersByTime(TEST_INTERVAL / 2);
-            expect(mockFn).not.toHaveBeenCalled();
-
-            // Run time forward callback without providing the observer a selector target
-            jest.useRealTimers();
             document.body.appendChild(nonMatchingElement);
-            await new Promise(process.nextTick);
+            mockObserver.simulateAddedNodes([nonMatchingElement], document.body);
+            expect(tracker.wasDisconnected).toBe(false);
 
-            // jest.advanceTimersByTime(TEST_INTERVAL);
-
+            // Advance time past the timeout, the observer should disconnect without invoking the callback
+            jest.advanceTimersByTime(TEST_TIMEOUT * 2);
             expect(mockFn).not.toHaveBeenCalled();
+            expect(tracker.wasDisconnected).toBe(true);
+            expect(mockObserver.isObserving).toBe(false);
         });
     });
-
 });

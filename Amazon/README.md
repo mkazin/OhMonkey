@@ -2,6 +2,15 @@
 
 ## Amazon.com
 
+### [Amazon Neutral Protection Button](AmazonNeutralProtectionButton.user.js)
+Removes formatting highlighting the button to buy an extended warranty.
+
+Turns this: <img src="img/AmazonNeutralProtectionButton-1_Before.png">
+
+Into this:
+<img src="img/AmazonNeutralProtectionButton-2_After.png">
+
+
 ### [Amazon Variation Pricer](AmazonVariationPricer.user.js)
 Shows prices on every color/size option of item.
 
