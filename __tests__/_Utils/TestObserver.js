@@ -144,7 +144,6 @@ afterEach(() => {
 describe('Exports', () => {
 
     test('should export onceElementAppears function', () => {
-        console.log(onceElementAppears);
         expect(typeof onceElementAppears).toBe('function');
     });
     test('window should have onceElementAppears function', () => {

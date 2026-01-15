@@ -1,12 +1,27 @@
 # OhMonkey
-A collection of GreaseMonkey/TamperMonkey scripts I wrote
+A collection of Userscripts I've written for my own use
 
-## What are GreaseMonkey and TamperMonkey?
+## What's a "Userscript"?
+Userscripts are JavaScript programs which are run in a web browser and can modify webpage content, add new features, automate tasks, and enhance the overall user experience in ways the website owner did not provide. Take a look through my scripts to get an idea of the kind of changes I've introduced.
 
-[GreaseMonkey](https://addons.mozilla.org/en-US/firefox/addon/greasemonkey/) and [TamperMonkey](https://www.tampermonkey.net/) are browser extensions that serve as user script managers. They allow users to customize the behavior of websites they visit by running user scripts, which are small snippets of JavaScript code.  These scripts can modify webpage content, add new features, automate tasks, and enhance the overall user experience.
+A couple good examples I like to show folks:
+* [*America's Test Kitchen Amazon Pricing*](AmericasTestKitchen/README.md) - Adds the current Amazon price of the kitchen products reviewed by ATK.
+* [*Amazon Variation Pricer*](Amazon/README.md#amazon-variation-pricer) - displays the prices for each color variation of a product
+* [*YouTube No Comment*](Google/README.md#no-comment) - hides the comment section on YouTube videos.
 
- GreaseMonkey is the original and ran only on Mozilla Firefox. TamperMonkey was historically used on Google Chrome and other Chromium-based browsers, but has since been implemented on all browsers and is in more active development.
+## What's with "Monkey"?
+[GreaseMonkey](https://addons.mozilla.org/en-US/firefox/addon/greasemonkey/), [TamperMonkey](https://www.tampermonkey.net/), and [ViolentMonkey](https://violentmonkey.github.io/) are browser extensions that serve as userscript managers. They are responsible for running the appropriate scripts when the user visits a supported website.
 
+ GreaseMonkey is the original and ran only on Mozilla Firefox. TamperMonkey was historically used on Google Chrome and other Chromium-based browsers, but has since been implemented on all browsers and is in more active development. ViolentMonkey is the newest, is open source, and supports many browsers.
+
+ Why are they called that? I never really thought much about it. "Grease Monkey" is an old slang term for an auto mechanic. Today "monkey" is a verb used by engineers to describe tinkering with technology, possibly tracing back to the original term. "Tamper" seems obvious, whereas "violent"...? Beats me.
+
+## Ok... and "Oh Monkey"?
+Other than the obvious reference to these browser extensions, it's a phrase I adopted from a colleague I worked with long ago. It was a lovely little phrase he'd often use in place of cursing or as an exclamation of surprise or excitement.
+
+He's a guy I really enjoyed working with, learned a lot from, and still greatly admire as an engineer and human being. So I hope he doesn't mind me stealing and sharing it. Obviously, I didn't name him here out of respect for his privacy.
+
+Anyway, I found his phrase to be both professional and fun. I started using it later jobs and it tends to get positive- if sometimes confused- reactions from the folks I've worked with since.
 
 ## Support
 Feel free to create an issue to:
@@ -18,7 +33,9 @@ Feel free to create an issue to:
 
   If you need something more complex, I might be available for hire. Check out my website for info.
 
-Otherwise, if you like these and find them handy, let me know!
+  Another place you can try is the [/r/GreaseMonkey](https://www.reddit.com/r/GreaseMonkey/) subreddit. The folks there will sometimes help create a script if you ask nicely.
+
+* Otherwise, if you like these and find them handy, please let me know! Or feel free to hit that button on the right and buy me a coffee.
 
 
 ## In Remembrance

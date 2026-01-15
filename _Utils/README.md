@@ -5,11 +5,13 @@ This code is vanilla JS and imports no runtime dependencies
 
 ## Observer.js
 
-Provides whenElementAppears() - A reusable, single-line MutationObserver utility function.
+Provides:
+* `ObserverTracker` - a utility class to monitor the DOM for the appearence of a selector.
+* `onceElementAppears()` and `wheneverElementAppears()` - Easy-to-use functions to use ObserverTracker for one-time- or ongoing observation, respectively.
 
-Allows scripts to wait for a specific selector to appear on the page prior to running a provided callback function. Whether due to lazy loading, or a high-latency script download.
+These allow userscripts to wait for a specific selector to appear on the page prior to running a provided callback function. Whether due to lazy loading, high-latency script download, or scrolling content.
 
-Replaces the numerous lines of fairly boilerplate code which is otherwise required to set up a single-mutation observer, a better technique than the less reliable timeout or interval implementation a developer would otherwise use as a hack.
+This replaces the numerous lines of fairly boilerplate code which is otherwise required to set up a single-mutation observer, a better technique than the less reliable timeout or interval implementation some developers use as a hack.
 
 Returns an instance of the *ObserverTracker*  which allows users to have manual control over disconnecting the mutationObserver and otherwise track its status.
 
@@ -22,36 +24,33 @@ Version 0.0.3 introduced the ability to monitor within an existing [ShadowRoot](
 1. Import the code by adding the following to your userscript header:
 
         // @require      https://raw.githubusercontent.com/mkazin/OhMonkey/main/_Utils/Observer.js
-1. Pass delayed-execution code as a callback to `whenElementAppears()`
+1. Pass the desired selector and a callback to `wheneverElementAppears()` or `onceElementAppears()`
 
     Parameters:
-    * @param {string} selector - CSS selector to be monitored
-    * @param {function} fn - The callback function to invoke the selector is observed.
-    * @param {DOM element} [observationTarget=document] - Optional node to observe for the appearance of the selector. If not provided, the entire DOM will be observed. Limiting the scope can yield better performance.
-    * @param {Number} [timeout] - Optional timeout in ms to disable observer. If set to 0, mutationobserver will continue to run until the selector is seen.
-    * @returns {ObserverTracker}
+    * `@param {string} selector` - CSS selector to be monitored
+    * `@param {function} fn` - The callback function to invoke the selector is observed.
+    * `@param {DOM element} [observationTarget=document]` - Optional node to observe for the appearance of the selector. If not provided, the entire DOM will be observed. Limiting the scope can yield better performance.
+    * `@param {Number} [timeout]` - Optional timeout in ms to disable observer. By default set to 0 which means it will continue to run until the selector is seen.
+    * `@param {Boolean} [disconnectOnDetect]` - Optional flag to disable automatic disconnection of the observer after the first invocation (unless already disconnected by the timeout). This parameter does not exist in `wheneverElementAppears()` and `onceElementAppears()` (these hard-code the parameter passed to `ObserverTracker`).
+    * `@param {string} [debugName]` - Optional prefix text for debugging purposes, defaults to "ObserverTracker". Useful when running multiple observers in your script(s).
 
-### Examples
+    * `@returns {ObserverTracker}`, providing access to  `disconnect()` which can be called manually.
 
-1. Waiting for a site event - a frequent use of MutationObserver is waiting until a website loads asynchronously. Sometimes setting `@run-at` to `document-idle` is sufficient and the correct way to go. Other sites may have Javascript which runs even later.
+### Example uses
 
-YouTube video pages are one example where a necessary element is not available at the time the GreaseMonkey script runs. My
-[YoutubeAutoSpeed.user.js](../Google/YoutubeAutoSpeed.user.js) userscript adds a button on the page to allow quickly let a user reset the playback speed to 1x- handy for when the script's code makes a false negative decision on a video where playback shouldn't be adjusted.
-
-To delay the execution until after the `container` element appears in the DOM, it was wrapped with the following code which passes in that element:
-
-    onceElementAppears("div#start", (container) => {
-        const button = document.createElement("button")
-        ...
-        container.appendChild(button)
-    }
-
-2. Another example of pages which load over time is infinite scrolling. In this case, we want a long-running MutationObserver. For this use case we can use the `wheneverElementAppears` function,
+1. Pages which load content over time such as infinite scrolling. In this case, we want a long-running MutationObserver. For this use case we can use the `wheneverElementAppears` function,
 which sets *ObserverTracker*'s `disconnectOnDetect` to `false`.
 
-To delay the execution until after the `container` element appears in the DOM, it was wrapped with the following code which passes in that element:
+   See my [RedditSubredditHider.user.js](../Reddit/RedditSubredditHider.user.js) userscript in which newly-loaded posts have a "Hide Subreddit" button added to them to trigger the filtering.
 
-    whenElementAppears("div#start", (container) => {
+2. Waiting for a site event - a frequent use of MutationObserver is waiting until a website loads asynchronously. Sometimes setting `@run-at` to `document-idle` is sufficient and the correct way to go. Other sites may have Javascript which runs even later.
+
+   YouTube video pages are one example where a necessary element is not available at the time the GreaseMonkey script runs. My
+[YoutubeAutoSpeed.user.js](../Google/YoutubeAutoSpeed.user.js) userscript adds a button on the page to allow quickly let a user reset the playback speed to 1x- handy for when the script's code makes a false negative decision on a video where playback shouldn't be adjusted.
+
+   To delay the execution until after the `container` element appears in the DOM, it was wrapped with the following code which passes in that element:
+
+    onceElementAppears("div#start", (container) => {
         const button = document.createElement("button")
         ...
         container.appendChild(button)
@@ -61,10 +60,17 @@ To delay the execution until after the `container` element appears in the DOM, i
 window.wheneverElementAppears("span.sharebar_comment_count", (e) => console.log(`Comment count: ${e.textContent}`));
 
 
-### Security Warning
+### Security, Forward-compatablity
+
 As with any browser script, importing code brings risk. Make sure you evaluate the code first. (Please do let me know if you find security concerns I can fix)
 
-I recommend avoiding linking directly to the raw copy of the file on the main branch. Rather I prefer to use a tagged version or even locking to a commit identifier which can't be tampered with should my account get hacked.
+Due to the nature of git repositories, the content of the above imported link can change, including changes which may break your code, or even mallicious code if the repository is compromised. The utility might even be moved to a different repository.
+
+I recommend avoiding linking directly to the raw copy of the file on the main branch. Instead, some possible alternatives:
+ # A tagged version to avoid future compatability issues, or;
+ # Lock to a commit identifier which can't be tampered with, even should my account get hacked; or
+ # Self-host your own copy (e.g. fork or copy to a repo you control)
+ I don't recommend including the code in your own script, but that's a technical option.
 
 ### Development / Contributions
 Pull requests, bug reports, and suggestions are welcome.
@@ -75,11 +81,6 @@ Use the `npm run` commands: `test`, `watch`, and `coverage`
 
 Pull requests should pass the existing [unit tests](/__tests__/) and have additional tests to cover updates.
 
-### Security, Forward-compatablity
-Due to the nature of git repositories, the content of the above imported link can change, including changes which may break your code, or even mallicious code if the repository is compromised. The utility might even be moved to a different repository.
-
-To avoid this you may lock your code to a specific version by using a commit ID rather than the "main" branch name.
-
 ### Possible future development
 
 This implementation serves several possible use-cases, even allowing for having multiple callbacks run on the same selector. That implementation may benefit from an upgrade which reuses the MutationObserver object. It may not be adequate for some more advanced use-cases.
@@ -89,5 +90,3 @@ I expect code using it would also look better, especially as it's currently taki
 
     .then(waitForSelector("#desiredElement"))
     .then(desiredElement => ...)
-
-Timeouts are another possible addition to allow developers to improve user experience when the code will not execute, such as running some fallback or cleanup code.
