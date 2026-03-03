@@ -7,7 +7,7 @@ Improvements to UX to help finding/browsing command-line options
 
 Adds:
 * A table-of-contents with links to each command-line option.
-* Collapsable sections. Long sections are collapsed on load to make scrolling through options faster.
+* Collapsible sections. Long sections are collapsed on load to make scrolling through options faster.
 
 #### Demo:
 Compare the following local copies running the script with the original pages:

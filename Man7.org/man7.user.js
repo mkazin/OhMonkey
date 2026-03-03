@@ -1,12 +1,14 @@
 // ==UserScript==
-// @name         man7.org improved
-// @namespace    http://tampermonkey.net/
-// @version      2026-03-01
-// @description  try to take over the world!
-// @author       You
-// @match        https://www.man7.org/linux/man-pages/*
+// @name         man7.org (man pages) improved
+// @namespace    https://github.com/mkazin/OhMonkey
+// @author       Michael Kazin
+// @version      1.0
+// @description  Readability improvements for command line options section
+// @license      BSD-3-Clause
+// @match        https://*.man7.org/linux/man-pages/*
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=man7.org
 // @grant        none
+// @run-at       document-end
 // ==/UserScript==
 
 // Defines the maximum length of text within a section before we set it
@@ -31,12 +33,15 @@ function parseOptionFromText(text) {
 */
 function getOptionElements() {
     return Array.from(document.querySelector("h2 a#OPTIONS")
-    .parentElement.nextElementSibling.childNodes)
+    ?.parentElement?.nextElementSibling?.childNodes || [])
     .filter(n =>
-        // This DOM structure uses <b> element, e.g. curl(1)
-        (n.nodeType == 1 && n.tagName === "B"
+        // This DOM structure uses <b> or <i> elements and we can detect
+        // actual options bullets using either a bullet character or EOL
+        // in the previous node, e.g. see abicompat(1) and curl(1) respectively
+        (n.nodeType == 1 && ["B", "I"].includes(n.tagName)
             && (
                 n.previousSibling?.textContent?.replaceAll(" ", "").endsWith("\n")
+                || n.previousSibling?.textContent?.replaceAll(" ", "").endsWith("•")
                 // Used to detect verbose option names
                 || n.previousSibling?.textContent === ", "
             )
@@ -47,8 +52,15 @@ function getOptionElements() {
     )
 }
 
+let optionsAnchor;
+let toc;
 
 function run() {
+    // Find the options section or bail for other pages
+    optionsAnchor = document.querySelector("h2 a#OPTIONS");
+    if (!optionsAnchor) {
+        return;
+    }
     addFunctionalCSS();
     addCollapseFunctionalityToSections();
     buildTOC();
@@ -60,15 +72,15 @@ function run() {
     buildFilterSection();
 }
 
-const toc = document.createElement("div");
 function buildTOC() {
+    toc = document.createElement("div");
     toc.id = "custom-toc";
     toc.style.marginLeft = "20px";
     const heading = document.createElement("h2");
     heading.textContent = "Table of Contents";
     heading.style.marginTop = "0px";
     toc.appendChild(heading);
-    document.querySelector("h2:has(a#OPTIONS)").append(toc);
+    optionsAnchor.closest("h2").append(toc);
 }
 
 function addOptionToTOC(optionAnchor, optionText) {
@@ -76,7 +88,6 @@ function addOptionToTOC(optionAnchor, optionText) {
     optionLink.href = `#${optionAnchor.id}`; //`#${optionText.replaceAll('-', '')}`;
     optionLink.textContent = optionText;
     toc.appendChild(optionLink);
-    // toc.innerHTML += " | "; // Add line break after each option
 }
 
 function addAnchorToOptionElement(optionElement, optionText) {
@@ -85,7 +96,6 @@ function addAnchorToOptionElement(optionElement, optionText) {
     optionElement.parentElement.insertBefore(optionAnchor, optionElement);
     return optionAnchor;
 }
-
 
 function buildFilterSection() {
     const filterSection = document.createElement("div");
