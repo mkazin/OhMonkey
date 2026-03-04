@@ -2,7 +2,7 @@
 // @name         Amazon Subscribe & Save Total
 // @description  Shows total estimated cost of upcoming for Amazon subscription items
 // @author       https://github.com/mkazin
-// @version      0.4
+// @version      0.5
 // @license      BSD-3-Clause
 // @namespace    http://tampermonkey.net/
 // @grant        none
@@ -30,6 +30,16 @@
         div.innerText = `Total Cost: $${total.toFixed(2)}`
 
         container.appendChild(div)
+
+        const savings = Array.from(deliveryRow.querySelectorAll(".subscription-card:has(.subscription-discount-message)"))
+            .map(c => Number(c.querySelector(".subscription-discount-message").innerText.replace(/[^0-9.]/g, '')) *
+                      Number((c.querySelector(".subscription-price")?.innerText || "0").replace("$", "")) / 100)
+            .reduce((acc, val) => acc + val)
+        if (savings > 0) {
+            const savingsDiv = document.createElement("div")
+            savingsDiv.innerText = `Savings: $${savings.toFixed(2)}`
+            container.appendChild(savingsDiv)
+        }
     })
 
 })();
